@@ -35,7 +35,7 @@ def getPrepInfo(url):#получаем инфу по конкретному пр
 		#print(url)
 		items = list(soup.find(class_="wikitable card").children)
 		resultObj = {}
-		resultObj["name"] = items[1].get_text().strip()#strip типа удаляет лишние пробелы, а гет_техт получает текст тега
+		resultObj["name"] = items[1].find('b').get_text().strip()#strip типа удаляет лишние пробелы, а гет_техт получает текст тега
 		resultObj["image"] = items[3].find('td').find('img')['src']
 		rating = list(soup.find(class_="wikitable card").find_all(class_='starrating-div'))
 		resultObj['rate'] = []
@@ -68,19 +68,11 @@ def formatOutput(result):
 				print key + ' - ' + result[key]
 	else:
 		print(u'Ничего не найдено')
-formatOutput(finalSearch(u'беклемишев'))
+def all():
+	formatOutput(finalSearch(u'беклемишев'))
 
 
-# def emojify(num):
-# 	if(num >= 4.5):
-# 		return '❤️❤️❤️❤️❤️'
-# 	if num/1 = 4 :
-# 		return '⭐️⭐️⭐️⭐️'
-# 	elif num/1 = 3 : 
-# 		return '⭐️⭐️⭐️'
-# 	elif num/1 = 2 :
-# 		return '🍆🍆'
-# 	return '🆘'
+
 
 
 #что тебе над знать - файнал серч может вернуть три типа значений - ноне(если такого препа нет, или проихошла ошибка(в консоли тогда смотри)) -
