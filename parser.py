@@ -8,7 +8,7 @@ url_base = 'http://wikimipt.org/index.php?title=%D0%9A%D0%B0%D1%82%D0%B5%D0%B3%D
 def getPrepList(name):# здесь получаем список препов с викимипта(тех чьи фамилии на нужную букву начинаются)
 	url = url_base + name[0].upper()#получаем нужную ссылку(посмотри на викимипте как она выглядит)
 	r = requests.get(url)#получаем страницу
-	if( r.status_code == 200):
+	if( r.status_code == 200 ):
 		soup = BeautifulSoup(r.text, 'html.parser')#запускаем парсер
 		rawPrepList = soup.find(class_ ="mw-category-group")#находим нужный блок
 		if not rawPrepList:
@@ -17,16 +17,19 @@ def getPrepList(name):# здесь получаем список препов с
 		result = []
 		for rawItem in rawPrepList:
 			cleanItem = list(rawItem.children)[0]
-			result.append({'name' : cleanItem['title'].lower(), 'href' : cleanItem['href']})#получаем массив всех препов с именем и ссылкой
+			result.append({'name' : cleanItem['title'], 'href' : cleanItem['href']})#получаем массив всех препов с именем и ссылкой
 		return result
 	else:
 		raise ValueError('Невозможно получить список преподавателей ((00((00(((' + ' - ' + r.status_code)# код 200 это типа хороший ответ, а на все остальное мы генерим ошибки
 def findPrepInList(name, array):# здесь находим нужного препа в списке()
 	result = []
-	pattern = re.compile(name.lower())# получаем нужное регулярное выражение(загугли если не шаришь); регулярка а не поиск по подстроке потому что возможно поиск над будет улучшить - такой задел на будущее
+	pattern = re.compile(name.lower(), flags=re.IGNORECASE)# получаем нужное регулярное выражение(загугли если не шаришь); регулярка а не поиск по подстроке потому что возможно поиск над будет улучшить - такой задел на будущее
 	for item in array:
 		if pattern.match(item['name']): # ну и просто сверяем все имена с регуляркой
+			print('fefe')
 			result.append({'name' : item['name'], 'href' : 'http://wikimipt.org' + item['href']})
+	if( len(result) == 0 ):
+		print(name)
 	return result;
 def getPrepInfo(url):#получаем инфу по конкретному препу(тут короче все так же, поэтому не буду особо расписывать)
 	r = requests.get(url)
@@ -65,7 +68,7 @@ def formatOutput(result):
 				for item in result[key]:
 					print (item['skill'] + '  -  ' + item['value'])
 			else:
-				print key + ' - ' + result[key]
+				print (key + ' - ' + result[key])
 	else:
 		print(u'Ничего не найдено')
 def all():
