@@ -23,7 +23,7 @@ def getPrepList(name):# здесь получаем список препов с
 	else:
 		raise ValueError('Невозможно получить список преподавателей ((00((00(((' + ' - ' + r.status_code)# код 200 это типа хороший ответ, а на все остальное мы генерим ошибки
 		
-def findPrepInList(name, array):# здесь находим нужного препа в списке()
+def findPrepInList(name, array):# здесь находим нужного препа в списке
 	result = []
 	pattern = re.compile(name.lower(), flags=re.IGNORECASE)# получаем нужное регулярное выражение 
 	for item in array:
