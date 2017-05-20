@@ -4,7 +4,9 @@ import parser
 import telebot
 import requests
 from datetime import datetime
-
+from flask import Flask, request
+import os
+server = Flask(__name__)
 #будем писать логи или нет
 is_logging = True
 print('JUST STARTED')
@@ -21,7 +23,7 @@ def log(message, answer):
 def start(message):
     bot.send_message(message.chat.id, 'Привет, ' + message.from_user.first_name)
 #функция обработки входящих сообщений
-@bot.message_handler(content_types=['text'])
+@bot.message_handler(func=lambda message: True, content_types=['text'])
 def telemipt(message):
         if message.text:
             result = parser.finalSearch(message.text)
@@ -75,7 +77,7 @@ def num(line):
         return float(num)
     else:
         return 0.0
-
+#делаем предсказание исходя из суммарного рейтинга
 def make_bot_prediction(val):
     if ( round(val) == 5 ):
         return u'Бот считает, что этот препод бог'
@@ -111,5 +113,19 @@ def categories_prettify(item):
 def emoji_prettify(line):
     return round(num(line)) * u'★' + (5 - round(num(line))) * u'☆' + '   ' + line
 
-bot.polling(none_stop=True, interval=0);
+@server.route("/bot", methods=['POST'])
+def getMessage():
+    bot.process_new_updates([telebot.types.Update.de_json(request.stream.read().decode("utf-8"))])
+    return "!", 200
 
+@server.route("/")
+def webhook():
+    bot.remove_webhook()
+    bot.set_webhook(url="https://mipttelegram.herokuapp.com/bot")
+    return "!", 200
+@server.route("/stop")
+def webhook_stop():
+    bot.remove_webhook()
+
+server.run(host="0.0.0.0", port=os.environ.get('PORT', 5000))
+server = Flask(__name__)
