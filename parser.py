@@ -5,6 +5,7 @@ import re
 import requests;
 import unicodedata
 url_base = 'http://wikimipt.org/index.php?title=%D0%9A%D0%B0%D1%82%D0%B5%D0%B3%D0%BE%D1%80%D0%B8%D1%8F:%D0%9F%D1%80%D0%B5%D0%BF%D0%BE%D0%B4%D0%B0%D0%B2%D0%B0%D1%82%D0%B5%D0%BB%D0%B8_%D0%BF%D0%BE_%D0%B0%D0%BB%D1%84%D0%B0%D0%B2%D0%B8%D1%82%D1%83&from='
+
 def getPrepList(name):# здесь получаем список препов с викимипта(тех чьи фамилии на нужную букву начинаются)
 	url = url_base + name[0].upper()#получаем нужную ссылку(посмотри на викимипте как она выглядит)
 	r = requests.get(url)#получаем страницу
@@ -12,8 +13,8 @@ def getPrepList(name):# здесь получаем список препов с
 		soup = BeautifulSoup(r.text, 'html.parser')#запускаем парсер
 		rawPrepList = soup.find(class_ ="mw-category-group")#находим нужный блок
 		if not rawPrepList:
-			rawPrepList = soup.find(class_ ="mw-content-ltr")#викимипт стремный, там короче страница на Я по другому устроенаб поэтому так
-		rawPrepList = rawPrepList.find('ul').find_all('li')#дальше пробираемс по тегам к нужным данным
+			rawPrepList = soup.find(class_ ="mw-content-ltr")#викимипт стремный, там короче страница на Я по другому устроена поэтому так
+		rawPrepList = rawPrepList.find('ul').find_all('li')#дальше пробираемся по тегам к нужным данным
 		result = []
 		for rawItem in rawPrepList:
 			cleanItem = list(rawItem.children)[0]
@@ -21,17 +22,16 @@ def getPrepList(name):# здесь получаем список препов с
 		return result
 	else:
 		raise ValueError('Невозможно получить список преподавателей ((00((00(((' + ' - ' + r.status_code)# код 200 это типа хороший ответ, а на все остальное мы генерим ошибки
+		
 def findPrepInList(name, array):# здесь находим нужного препа в списке()
 	result = []
-	pattern = re.compile(name.lower(), flags=re.IGNORECASE)# получаем нужное регулярное выражение(загугли если не шаришь); регулярка а не поиск по подстроке потому что возможно поиск над будет улучшить - такой задел на будущее
+	pattern = re.compile(name.lower(), flags=re.IGNORECASE)# получаем нужное регулярное выражение 
 	for item in array:
 		if pattern.match(item['name']): # ну и просто сверяем все имена с регуляркой
-			print('fefe')
 			result.append({'name' : item['name'], 'href' : 'http://wikimipt.org' + item['href']})
-	if( len(result) == 0 ):
-		print(name)
 	return result;
-def getPrepInfo(url):#получаем инфу по конкретному препу(тут короче все так же, поэтому не буду особо расписывать)
+
+def getPrepInfo(url):#получаем инфу по конкретному препу(тут короче все так же)
 	r = requests.get(url)
 	if( r.status_code == 200):
 		soup = BeautifulSoup(r.text, 'html.parser')
@@ -49,6 +49,7 @@ def getPrepInfo(url):#получаем инфу по конкретному пр
 		return resultObj
 	else:
 		raise ValueError('Невозможно получить страницу преподавателя (00((((((' + ' - ' + r.status_code)
+		
 def finalSearch(name):
 	result = findPrepInList(name, getPrepList(name))
 	if(len(result) != 0):
@@ -58,31 +59,10 @@ def finalSearch(name):
 			return result;
 
 
-def formatOutput(result):
-	if (type(result) == list):
-		for item in result:
-			print (item['name'] + ' - ' + item['href'])
-	elif (type(result) == dict):
-		for key in result:
-			if (type(result[key]) == list):
-				for item in result[key]:
-					print (item['skill'] + '  -  ' + item['value'])
-			else:
-				print (key + ' - ' + result[key])
-	else:
-		print(u'Ничего не найдено')
-def all():
-	formatOutput(finalSearch(u'беклемишев'))
-
-
-
-
-
-#что тебе над знать - файнал серч может вернуть три типа значений - ноне(если такого препа нет, или проихошла ошибка(в консоли тогда смотри)) -
-# в таком случае ты типа гришь извините препа нет или ошибка;
-#еще может вернуть обьект - тогда все четко; у обьекта(или словаря, это вроде  так здесь называется) 
-# есть три поля - name, image и rate, rate - это массив, который состоит из обьктов у которых в поле skill записано типа 'Халявность' там и всякое в таком духе
-# а в поле value - значение(это строка, правда - там еще количество голосов есть)
-#ну и последнее - файнал серч может вернуть массив - тогда это означает что у нас типа несколько совпадений (массив - тоже обьектов, там поля типа name и href где чего вроде понятно из названия)
-#
+#файнал серч может вернуть три варианта:
+#1)ноне(если такого препа нет, или проихошла ошибка)
+#2)вернуть обьект, у которого есть три поля - name, image и rate, rate - это массив, который состоит 
+#из обьктов у которых в поле skill записано типа 'Халявность' и прочее,
+#а в поле value - значение(это строка - там еще количество голосов есть)
+#3)массив - тогда это означает что у нас типа несколько совпадений (массив - тоже обьектов)
 

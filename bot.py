@@ -8,7 +8,7 @@ import requests
 #turn on/turn off logs
 logging = True
 
-
+#function send logs
 def log(message, answer):
     print("\n-------")
     from datetime import datetime
@@ -18,7 +18,7 @@ def log(message, answer):
                                                                                   str(message.from_user.id),
                                                                                   message.text,
                                                                                    answer))
-
+#main function to send answer to the user
 @bot.message_handler(content_types=['text'])
 def telemipt(message):
         print('JUST STARTED')
@@ -30,11 +30,13 @@ def telemipt(message):
                     bot.send_message(message.chat.id, 'Формулируй запрос чётче. Результатов слишком много: ' + str(len(result)))
                 else:
                     for item in result:
+                        #чтобы ссылка красиво выглядела
                         message_url = url + 'sendMessage' + '?chat_id=' + str(message.chat.id) + \
                                       '&text=<a href="' + item['href'] + '">' + item['name'] + '</a>&parse_mode=HTML'
                         requests.get(message_url)
                         answer = item['name']
-                        log(message, answer)
+                        if logging == True:
+                            log(message, answer)
             elif (type(result) == dict):
                 for key in result:
                     if (type(result[key]) == list):
@@ -48,7 +50,7 @@ def telemipt(message):
                                 rateList = rateList + item['skill'] + '                         ' + \
                                            emojiPrettify(item['value']) + '\n'
                             elif (item['skill'] == u'Халявность'):
-                              rateList = rateList + item['skill'] +  '                        ' + \
+                                rateList = rateList + item['skill'] +  '                        ' + \
                                           emojiPrettify(item['value']) + '\n'
                             elif (item['skill'] == u'Общая оценка'):
                                 rateList = rateList + item['skill'] + '                  ' + \
@@ -67,6 +69,12 @@ def telemipt(message):
                                 log(message, answer)
             else:
                 bot.send_message(message.chat.id, 'Ничего не найдено')
+                answer = 'Ничего не найдено'
+                if logging == True:
+                    log(message, answer)
+                #variable 'rate' stores the sum of all values from the teacher's rating
+                #rate/5 = average value of the teacher
+                #bot makes a subjective opinion about the teacher based on this value 
             if (rate / 5 >= 4.5 and rate!=0) :
                 bot.send_message(message.chat.id, 'Бот считает, что этот препод бог')
             elif (rate / 5 >= 4 and rate / 5 < 4.5 and rate != 0):
@@ -77,7 +85,8 @@ def telemipt(message):
                 bot.send_message(message.chat.id, 'Бот считает, что этот препод так себе')
             elif (rate!=0):
                 bot.send_message(message.chat.id, 'Бот считает, что это опасность')
-
+                
+#берет значение рейтинга(число) по данному полю 
 def num(line):
     words = line.split(' ')
     num = words[0]
@@ -86,40 +95,9 @@ def num(line):
     else:
         return 0.0
 
+#печатает звездочки для рейтинга
 def emojiPrettify(line):
     return round(num(line)) * u'★' + (5 - round(num(line))) * u'☆' + '   ' + line
-#def emojify(num) :
- #   return round(num) * u'★' + (5 - round(num)) * u'☆'
-# def emojify(num):
-#     if(num >= 4.5):
-#         return u'★★★★★'
-
-#     if round(num) == 4 :
-#         return u'★★★★☆'
-#     elif round(num) == 3 :
-#         return u'★★★☆☆'
-#     elif round(num) == 2 :
-#         return u'★★☆☆☆'
-#     elif round(num) == 1 :
-#         return u'★☆☆☆☆'
-#     return u'☆☆☆☆☆'
-
-# def emojify(num):
-#     if(num >= 4.5):
-#         return u'❤️❤️❤️❤️❤️'
-#     if num // 1 == 4 :
-#         return u'⭐️⭐️⭐️⭐️       '
-#     elif num//1 == 3 :
-#         return u'⭐️⭐️⭐             '
-#     elif num//1 == 2 :
-#         return u'🍆🍆                    '
-#     return u'🆘                           '
-
-# @bot.message_handler(commands=['start'])
-# def keyboard(message):
-#     user_markup = telebot.types.ReplyKeyboardMarkup(True)
-#     user_markup.row('/start')
-#     bot.send_message(message.from_user.id, 'здрасте', reply_markup=user_markup)
 
 bot.polling(none_stop=True, interval=59);
 
