@@ -78,33 +78,31 @@ def telemipt(message):
             elif (rate!=0):
                 bot.send_message(message.chat.id, 'Бот считает, что это опасность')
 
-#думаю здесь надо прописать, что если там надпись (нет оценок) то значение выставить 0
-# и когда будем выводить оценки делать проверку на то, что значение 0->пишем нет оценок
 def num(line):
     words = line.split(' ')
     num = words[0]
     if (not num.isalpha() and num != '('):  
-        print(num)
         return float(num)
     else:
-        print(num + ' false ')
         return 0.0
 
 def emojiPrettify(line):
-    return emojify(num(line)) + '   ' + line
+    return round(num(line)) * u'★' + (5 - round(num(line))) * u'☆' + '   ' + line
+#def emojify(num) :
+ #   return round(num) * u'★' + (5 - round(num)) * u'☆'
+# def emojify(num):
+#     if(num >= 4.5):
+#         return u'★★★★★'
 
-def emojify(num):
-    if(num >= 4.5):
-        return u'★★★★★'
-    if round(num) == 4 :
-        return u'★★★★☆'
-    elif round(num) == 3 :
-        return u'★★★☆☆'
-    elif round(num) == 2 :
-        return u'★★☆☆☆'
-    elif round(num) == 1 :
-        return u'★☆☆☆☆'
-    return u'☆☆☆☆☆'
+#     if round(num) == 4 :
+#         return u'★★★★☆'
+#     elif round(num) == 3 :
+#         return u'★★★☆☆'
+#     elif round(num) == 2 :
+#         return u'★★☆☆☆'
+#     elif round(num) == 1 :
+#         return u'★☆☆☆☆'
+#     return u'☆☆☆☆☆'
 
 # def emojify(num):
 #     if(num >= 4.5):
