@@ -21,6 +21,7 @@ def log(message, answer):
 
 @bot.message_handler(content_types=['text'])
 def telemipt(message):
+        print('JUST STARTED')
         if message.text:
             result = parser.finalSearch(message.text)
             rate = 0
@@ -39,7 +40,6 @@ def telemipt(message):
                     if (type(result[key]) == list):
                         rateList = ''
                         for item in result[key]:
-                        
                             rate += num(item['value'])
                             if(item['skill'] == u'Знания'):
                                 rateList = rateList + item['skill'] + '                                ' + \
@@ -121,5 +121,5 @@ def emojiPrettify(line):
 #     user_markup.row('/start')
 #     bot.send_message(message.from_user.id, 'здрасте', reply_markup=user_markup)
 
-bot.polling(none_stop=True, interval=0)
+bot.polling(none_stop=True, interval=59);
 
