@@ -59,21 +59,24 @@ def telemipt(message):
                             bot.send_message( message.chat.id, result[key] )
                 if (is_logging):
                     log(message, answer)
+                if (summary_rate != 0):
+                    bot.send_message( message.chat.id, make_bot_prediction( summary_rate / 5 ))
+                else:
+                     bot.send_message( message.chat.id, 'Here be dragons later')
             else:
                 bot.send_message(message.chat.id, 'Ничего не найдено')
                 answer = 'Ничего не найдено'
                 if (is_logging):
-                    log(message, answer)    
-           
-            if (summary_rate != 0):
-                bot.send_message( message.chat.id, make_bot_prediction( summary_rate / 5 )) 
-           
-                
-#берет значение рейтинга(число) по данному полю 
+                    log(message, answer)
+
+
+
+
+#берет значение рейтинга(число) по данному полю
 def num(line):
     words = line.split(' ')
     num = words[0]
-    if (not num.isalpha() and num != '('):  
+    if (not num.isalpha() and num != '('):
         return float(num)
     else:
         return 0.0
