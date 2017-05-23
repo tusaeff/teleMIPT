@@ -6,6 +6,19 @@ import requests
 from datetime import datetime
 from flask import Flask, request
 import os
+import psycopg2
+import urlparse
+
+urlparse.uses_netloc.append("postgres")
+url = urlparse.urlparse(os.environ["DATABASE_URL"])
+
+conn = psycopg2.connect(
+    database=url.path[1:],
+    user=url.username,
+    password=url.password,
+    host=url.hostname,
+    port=url.port
+)     
 server = Flask(__name__)
 #будем писать логи или нет
 is_logging = True
@@ -82,16 +95,16 @@ def num(line):
         return 0.0
 #делаем предсказание исходя из суммарного рейтинга
 def make_bot_prediction(rate):
-    if (rate / 5 >= 4.5) :
-        bot.send_message(message.chat.id, 'Бот считает, что этот препод бог')
-    elif (rate / 5 >= 4 and rate / 5 < 4.5):
-        bot.send_message(message.chat.id, 'Бот считает, что этот препод классный')
-    elif (rate / 5 >= 3 and rate / 5 < 4):
-        bot.send_message(message.chat.id, 'Бот считает, что этот препод среднячок')
-    elif (rate / 5 >= 2 and rate / 5 < 3):
-        bot.send_message(message.chat.id, 'Бот считает, что этот препод так себе')
+    if (rate >= 4.5) :
+        return 'Бот считает, что этот препод бог'
+    elif (rate >= 4 and rate < 4.5):
+        return 'Бот считает, что этот препод классный'
+    elif (rate >= 3 and rate < 4):
+            return 'Бот считает, что этот препод среднячок'
+    elif (rate >= 2 and rate < 3):
+        return 'Бот считает, что этот препод так себе'
     else:
-        bot.send_message(message.chat.id, 'Бот считает, что это опасность')
+        return 'Бот считает, что это опасность'
 
 #инсайт : телеграм сжимает пробелы и нижние подчеркивания и черт знает что еще - записи,
 #         в которых одинаковое число символов могут иметь разную длину, поэтому число пробелов нельзя

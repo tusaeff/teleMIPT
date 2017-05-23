@@ -7,6 +7,7 @@ import unicodedata
 import time
 url_base = 'http://wikimipt.org/index.php?title=%D0%9A%D0%B0%D1%82%D0%B5%D0%B3%D0%BE%D1%80%D0%B8%D1%8F:%D0%9F%D1%80%D0%B5%D0%BF%D0%BE%D0%B4%D0%B0%D0%B2%D0%B0%D1%82%D0%B5%D0%BB%D0%B8_%D0%BF%D0%BE_%D0%B0%D0%BB%D1%84%D0%B0%D0%B2%D0%B8%D1%82%D1%83&from='
 IS_TESTING = True
+print ('\n -----------')
 def test(func):
 	if(not IS_TESTING):
 		def run_test(*args):
@@ -16,7 +17,6 @@ def test(func):
 			t0 = time.time()
 			x = func(*args)
 			t1 = time.time()
-			print ('\n -----------')
 			print ( func.__name__ + ' - ' + str(t1 - t0))
 			return x
 	return run_test
