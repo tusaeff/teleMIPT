@@ -12,13 +12,13 @@ is_logging = True
 print('JUST STARTED')
 #логгер
 def log(message, answer):
-    print("\n-------")
     print(datetime.now())
     print("Сообщение от {0} {1}. (id = {2}) \nЗапрос: '{3}' \nОтвет: '{4}'".format(message.from_user.first_name,
                                                                                   message.from_user.last_name,
                                                                                   str(message.from_user.id),
                                                                                   message.text,
                                                                                      answer))
+    print("\n-------")
 @bot.message_handler(commands=['start'])
 def start(message):
     bot.send_message(message.chat.id, 'Привет, ' + message.from_user.first_name)
