@@ -81,16 +81,17 @@ def num(line):
     else:
         return 0.0
 #делаем предсказание исходя из суммарного рейтинга
-def make_bot_prediction(val):
-    if ( round(val) == 5 ):
-        return u'Бот считает, что этот препод бог'
-    elif ( round(val) == 4 ):
-        return u'Бот считает, что этот препод классный'
-    elif ( round(val) == 3 ):
-        return u'Бот считает, что этот препод среднячок'
-    elif ( round(val) == 2 ):
-        return u'Бот считает, что этот препод так себе'
-    return u'Бот считает, что это опасность'
+def make_bot_prediction(rate):
+    if (rate / 5 >= 4.5) :
+        bot.send_message(message.chat.id, 'Бот считает, что этот препод бог')
+    elif (rate / 5 >= 4 and rate / 5 < 4.5):
+        bot.send_message(message.chat.id, 'Бот считает, что этот препод классный')
+    elif (rate / 5 >= 3 and rate / 5 < 4):
+        bot.send_message(message.chat.id, 'Бот считает, что этот препод среднячок')
+    elif (rate / 5 >= 2 and rate / 5 < 3):
+        bot.send_message(message.chat.id, 'Бот считает, что этот препод так себе')
+    else:
+        bot.send_message(message.chat.id, 'Бот считает, что это опасность')
 
 #инсайт : телеграм сжимает пробелы и нижние подчеркивания и черт знает что еще - записи,
 #         в которых одинаковое число символов могут иметь разную длину, поэтому число пробелов нельзя

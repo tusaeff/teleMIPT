@@ -16,7 +16,8 @@ def test(func):
 			t0 = time.time()
 			x = func(*args)
 			t1 = time.time()
-			print (func.__name__ + ' - ' + str(t1 - t0))
+			print ('\n -----------')
+			print ( func.__name__ + ' - ' + str(t1 - t0))
 			return x
 	return run_test
 @test
@@ -39,7 +40,7 @@ def getPrepList(name):# здесь получаем список препов с
 @test	
 def findPrepInList(name, array):# здесь находим нужного препа в списке
 	result = []
-	pattern = re.compile(name.lower(), flags=re.IGNORECASE)# получаем нужное регулярное выражение 
+	pattern = re.compile(name.lower(), flags=re.IGNORECASE)# получаем нужное регулярное выражение
 	for item in array:
 		if pattern.match(item['name']): # ну и просто сверяем все имена с регуляркой
 			result.append({'name' : item['name'], 'href' : 'http://wikimipt.org' + item['href']})
@@ -63,7 +64,6 @@ def getPrepInfo(url):#получаем инфу по конкретному пр
 		return resultObj
 	else:
 		raise ValueError('Невозможно получить страницу преподавателя (00((((((' + ' - ' + r.status_code)
-@test
 def finalSearch(name):
 	result = findPrepInList(name, getPrepList(name))
 	if(len(result) != 0):
@@ -75,8 +75,7 @@ def finalSearch(name):
 
 #файнал серч может вернуть три варианта:
 #1)ноне(если такого препа нет, или проихошла ошибка)
-#2)вернуть обьект, у которого есть три поля - name, image и rate, rate - это массив, который состоит 
+#2)вернуть обьект, у которого есть три поля - name, image и rate, rate - это массив, который состоит
 #из обьктов у которых в поле skill записано типа 'Халявность' и прочее,
 #а в поле value - значение(это строка - там еще количество голосов есть)
 #3)массив - тогда это означает что у нас типа несколько совпадений (массив - тоже обьектов)
-
