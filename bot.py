@@ -3,25 +3,16 @@
 import parser
 import telebot
 import requests
-from datetime import datetime
+from datetime import datetime, date
 from flask import Flask, request
+import statistic
 import os
-import psycopg2
-import urlparse
+# import psycopg2
+# from urllib.parse import urlparse
+from database import db, Prepod, Stats, server
 
-urlparse.uses_netloc.append("postgres")
-url = urlparse.urlparse(os.environ["DATABASE_URL"])
 
-conn = psycopg2.connect(
-    database=url.path[1:],
-    user=url.username,
-    password=url.password,
-    host=url.hostname,
-    port=url.port
-)     
-server = Flask(__name__)
-#будем писать логи или нет
-is_logging = True
+IS_LOGGING = True
 print('JUST STARTED')
 #логгер
 def log(message, answer):
@@ -32,6 +23,7 @@ def log(message, answer):
                                                                                   message.text,
                                                                                      answer))
     print("\n-------")
+
 @bot.message_handler(commands=['start'])
 def start(message):
     bot.send_message(message.chat.id, 'Привет, ' + message.from_user.first_name)
@@ -39,13 +31,14 @@ def start(message):
 @bot.message_handler(func=lambda message: True, content_types=['text'])
 def telemipt(message):
         if message.text:
+            bot.send_chat_action(message.chat.id, 'typing')
             result = parser.finalSearch(message.text)
             summary_rate = 0
             if (type(result) == list):
                 if (len(result)>=5):
                     answer = 'Формулируй запрос чётче. Результатов слишком много: ' + str(len(result));
                     bot.send_message(message.chat.id, answer)
-                    if (is_logging):
+                    if (IS_LOGGING):
                         log(message, answer)
                 else:
                     for item in result:
@@ -54,7 +47,7 @@ def telemipt(message):
                                       '&text=<a href="' + item['href'] + '">' + item['name'] + '</a>&parse_mode=HTML'
                         requests.get(message_url)
                         answer = item['name']
-                        if (is_logging):
+                        if (IS_LOGGING):
                             log(message, answer)
             elif (type(result) == dict):
                 for key in result:
@@ -70,20 +63,26 @@ def telemipt(message):
                         if (key == 'name'):
                             answer = result[key]
                             bot.send_message( message.chat.id, result[key] )
-                if (is_logging):
+                if (IS_LOGGING):
                     log(message, answer)
                 if (summary_rate != 0):
                     bot.send_message( message.chat.id, make_bot_prediction( summary_rate / 5 ))
                 else:
                      bot.send_message( message.chat.id, 'Here be dragons later')
+                preps = list(Prepod.query.filter_by(name=result['name']))
+                if (len(preps) == 0):
+                    prep = Prepod(result['name'])
+                    db.session.add(prep)
+                    db.session.flush()
+                else:
+                    prep = preps[0]
+                db.session.add(Stats(prep.id, message.chat.id));
+                db.session.commit()
             else:
                 bot.send_message(message.chat.id, 'Ничего не найдено')
                 answer = 'Ничего не найдено'
-                if (is_logging):
+                if (IS_LOGGING):
                     log(message, answer)
-
-
-
 
 #берет значение рейтинга(число) по данному полю
 def num(line):
@@ -143,6 +142,7 @@ def webhook():
 @server.route("/stop")
 def webhook_stop():
     bot.remove_webhook()
+
 
 server.run(host="0.0.0.0", port=os.environ.get('PORT', 5000))
 server = Flask(__name__)

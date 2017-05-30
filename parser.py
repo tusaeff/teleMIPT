@@ -57,6 +57,7 @@ def getPrepInfo(url):#получаем инфу по конкретному пр
 		resultObj["image"] = items[3].find('td').find('img')['src']
 		rating = list(soup.find(class_="wikitable card").find_all(class_='starrating-div'))
 		resultObj['rate'] = []
+		resultObj['href'] = url;
 		skills = [u'Знания', u'Умение преподавать', u'В общении', u'Халявность', u'Общая оценка']
 		for key in range(0, 5):
 			skillRate = rating[key].find('span').get_text()
