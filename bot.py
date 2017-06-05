@@ -7,9 +7,8 @@ from datetime import datetime, date
 from flask import Flask, request
 import statistic
 import os
-# import psycopg2
-# from urllib.parse import urlparse
 from database import db, Prepod, Stats, server
+from telebot import types
 
 
 IS_LOGGING = True
@@ -30,59 +29,63 @@ def start(message):
 #функция обработки входящих сообщений
 @bot.message_handler(func=lambda message: True, content_types=['text'])
 def telemipt(message):
-        if message.text:
-            bot.send_chat_action(message.chat.id, 'typing')
-            result = parser.finalSearch(message.text)
-            summary_rate = 0
-            if (type(result) == list):
-                if (len(result)>=5):
-                    answer = 'Формулируй запрос чётче. Результатов слишком много: ' + str(len(result));
-                    bot.send_message(message.chat.id, answer)
+    if message.text:
+        remove_markup = types.ReplyKeyboardRemove()
+        bot.send_chat_action(message.chat.id, 'typing')
+        result = parser.finalSearch(message.text)
+        summary_rate = 0
+        if (type(result) == list):
+            if (len(result)>=5):
+                answer = 'Формулируй запрос чётче. Результатов слишком много: ' + str(len(result));
+                bot.send_message(message.chat.id, answer)
+                if (IS_LOGGING):
+                    log(message, answer)
+            else:
+                markup = types.ReplyKeyboardMarkup(row_width=1, one_time_keyboard= True)
+                for item in result:
+                    #чтобы ссылка красиво выглядела
+                    message_url = url + 'sendMessage' + '?chat_id=' + str(message.chat.id) + \
+                                '&text=<a href="' + item['href'] + '">' + item['name'] + '</a>&parse_mode=HTML'
+                    requests.get(message_url)
+                    markup.add( types.KeyboardButton(item['name']))
+                    answer = item['name']
                     if (IS_LOGGING):
                         log(message, answer)
+                bot.send_message(message.chat.id, "Выберите преподавателя:", reply_markup=markup)
+        elif (type(result) == dict):
+            for key in result:
+                if (type(result[key]) == list):
+                    rateList = ''
+                    for item in result[key]:
+                        summary_rate += num(item['value'])
+                        rateList += categories_prettify(item)
+                    bot.send_message(message.chat.id, rateList)
+                elif (key == 'image'):
+                        bot.send_photo(message.chat.id, 'http://wikimipt.org/' + result[key] )
                 else:
-                    for item in result:
-                        #чтобы ссылка красиво выглядела
-                        message_url = url + 'sendMessage' + '?chat_id=' + str(message.chat.id) + \
-                                      '&text=<a href="' + item['href'] + '">' + item['name'] + '</a>&parse_mode=HTML'
-                        requests.get(message_url)
-                        answer = item['name']
-                        if (IS_LOGGING):
-                            log(message, answer)
-            elif (type(result) == dict):
-                for key in result:
-                    if (type(result[key]) == list):
-                        rateList = ''
-                        for item in result[key]:
-                            summary_rate += num(item['value'])
-                            rateList += categories_prettify(item)
-                        bot.send_message(message.chat.id, rateList)
-                    elif (key == 'image'):
-                            bot.send_photo(message.chat.id, 'http://wikimipt.org/' + result[key] )
-                    else:
-                        if (key == 'name'):
-                            answer = result[key]
-                            bot.send_message( message.chat.id, result[key] )
-                if (IS_LOGGING):
-                    log(message, answer)
-                if (summary_rate != 0):
-                    bot.send_message( message.chat.id, make_bot_prediction( summary_rate / 5 ))
-                else:
-                     bot.send_message( message.chat.id, 'Here be dragons later')
-                preps = list(Prepod.query.filter_by(name=result['name']))
-                if (len(preps) == 0):
-                    prep = Prepod(result['name'])
-                    db.session.add(prep)
-                    db.session.flush()
-                else:
-                    prep = preps[0]
-                db.session.add(Stats(prep.id, message.chat.id));
-                db.session.commit()
+                    if (key == 'name'):
+                        answer = result[key]
+                        bot.send_message( message.chat.id, result[key] )
+            if (IS_LOGGING):
+                log(message, answer)
+            if (summary_rate != 0):
+                bot.send_message( message.chat.id, make_bot_prediction( summary_rate / 5 ))
             else:
-                bot.send_message(message.chat.id, 'Ничего не найдено')
-                answer = 'Ничего не найдено'
-                if (IS_LOGGING):
-                    log(message, answer)
+                 bot.send_message( message.chat.id, 'Here be dragons later')
+            preps = list(Prepod.query.filter_by(name=result['name']))
+            if (len(preps) == 0):
+                prep = Prepod(result['name'])
+                db.session.add(prep)
+                db.session.flush()
+            else:
+                prep = preps[0]
+            db.session.add(Stats(prep.id, message.chat.id));
+            db.session.commit()
+        else:
+            bot.send_message(message.chat.id, 'Ничего не найдено')
+            answer = 'Ничего не найдено'
+            if (IS_LOGGING):
+                log(message, answer)
 
 #берет значение рейтинга(число) по данному полю
 def num(line):
