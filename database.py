@@ -3,7 +3,11 @@ from datetime import datetime
 from flask import Flask, request
 import os
 import psycopg2
-from urllib.parse import urlparse
+
+try:
+    from urllib.parse import urlparse
+except ImportError:
+     from urlparse import urlparse
 
 server = Flask(__name__)
 server.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']

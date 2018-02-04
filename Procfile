@@ -1,1 +1,1 @@
-web: python bot.py --log-file -
+web: env STAGE=PROD python bot.py --log-file -

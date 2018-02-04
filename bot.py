@@ -5,9 +5,10 @@ import telebot
 import requests
 from datetime import datetime, date
 from flask import Flask, request
-import statistic
 import os
-from database import db, Prepod, Stats, server
+if (os.environ['STAGE'] != 'DEV'):
+    from database import db, Prepod, Stats, server
+
 from telebot import types
 from keys import token
 
@@ -16,6 +17,7 @@ url = 'https://api.telegram.org/bot{0}/'.format(token)
 
 IS_NOT_WORKING = False
 IS_LOGGING = True
+IS_DEVELOPMENT = os.environ['STAGE'] == 'DEV'
 print('JUST STARTED')
 # логгер
 
@@ -24,8 +26,8 @@ def log(message, answer):
     print(datetime.now())
     print(
         "Сообщение от {0} {1}. (id = {2}) \nЗапрос: '{3}' \nОтвет: '{4}'".format(
-            message.from_user.first_name, message.from_user.last_name, str(
-                message.from_user.id), message.text, answer))
+            message.from_user.first_name, message.from_user.last_name, 
+                str(message.from_user.id).encode('utf-8'), message.text, answer))
     print("\n-------")
 
 
@@ -104,15 +106,17 @@ def telemipt(message):
                         summary_rate / 5))
             else:
                 bot.send_message(message.chat.id, 'Here be dragons later')
-            preps = list(Prepod.query.filter_by(name=result['name']))
-            if (len(preps) == 0):
-                prep = Prepod(result['name'])
-                db.session.add(prep)
-                db.session.flush()
-            else:
-                prep = preps[0]
-            db.session.add(Stats(prep.id, message.chat.id))
-            db.session.commit()
+
+            if (not IS_DEVELOPMENT):
+                preps = list(Prepod.query.filter_by(name=result['name']))
+                if (len(preps) == 0):
+                    prep = Prepod(result['name'])
+                    db.session.add(prep)
+                    db.session.flush()
+                else:
+                    prep = preps[0]
+                db.session.add(Stats(prep.id, message.chat.id))
+                db.session.commit()
         else:
             bot.send_message(
                 message.chat.id,
@@ -175,24 +179,28 @@ def emoji_prettify(line):
         (5 - round(num(line))) * u'☆' + '   ' + line
 
 
-@server.route("/bot", methods=['POST'])
-def getMessage():
-    bot.process_new_updates(
-        [telebot.types.Update.de_json(request.stream.read().decode("utf-8"))])
-    return "!", 200
+if (not IS_DEVELOPMENT):
+    @server.route("/bot", methods=['POST'])
+    def getMessage():
+        bot.process_new_updates(
+            [telebot.types.Update.de_json(request.stream.read().decode("utf-8"))])
+        return "!", 200
 
 
-@server.route("/")
-def webhook():
-    bot.remove_webhook()
-    bot.set_webhook(url="https://mipttelegram.herokuapp.com/bot")
-    return "!", 200
+    @server.route("/")
+    def webhook():
+        bot.remove_webhook()
+        bot.set_webhook(url="https://mipttelegram.herokuapp.com/bot")
+        return "!", 200
 
 
-@server.route("/stop")
-def webhook_stop():
-    bot.remove_webhook()
+    @server.route("/stop")
+    def webhook_stop():
+        bot.remove_webhook()
 
 
-server.run(host="0.0.0.0", port=os.environ.get('PORT', 5000))
-server = Flask(__name__)
+    server.run(host="0.0.0.0", port=os.environ.get('PORT', 5000))
+    server = Flask(__name__)
+
+else:
+    bot.polling();
