@@ -9,11 +9,14 @@ server = Flask(__name__)
 server.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
 db = SQLAlchemy(server)
 
+
 class Prepod(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80))
+
     def __init__(self, name):
         self.name = name
+
 
 class Stats(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -23,5 +26,5 @@ class Stats(db.Model):
 
     def __init__(self, prepod_id, user_id):
         self.date = datetime.now()
-        self.prepod_id = prepod_id;
-        self.user_id = user_id;
+        self.prepod_id = prepod_id
+        self.user_id = user_id
