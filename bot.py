@@ -9,7 +9,10 @@ import statistic
 import os
 from database import db, Prepod, Stats, server
 from telebot import types
+from keys import token;
 
+bot = telebot.TeleBot(token)
+url = 'https://api.telegram.org/bot{0}/'.format(token);
 
 IS_NOT_WORKING = False;
 IS_LOGGING = True
