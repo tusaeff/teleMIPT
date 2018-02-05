@@ -95,8 +95,14 @@ def telemipt(message):
                 else:
                     if (key == 'name'):
                         answer = result[key]
-                        bot.send_message(
-                            message.chat.id, result[key], reply_markup=remove_markup)
+                        answer_url = url + 'sendMessage' + '?chat_id=' + str(message.chat.id) + \
+                                     '&text=<a href="' + result['href'] + '">' + answer + \
+                                     '</a>&disable_web_page_preview=True&parse_mode=HTML'
+                        r = requests.get(answer_url)
+                        if (r.status_code != 200):
+                            print(
+                                'Что-то случилось на стороне телеграма, статус http запроса - ' + r.status_code)
+                            return
             if (IS_LOGGING):
                 log(message, answer)
             if (summary_rate != 0):

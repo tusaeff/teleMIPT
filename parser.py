@@ -70,6 +70,7 @@ def getPrepInfo(url):
         resultObj = {}
         resultObj["name"] = items[1].find('b').get_text().strip()
         resultObj["image"] = items[3].find('td').find('img')['src']
+        resultObj["href"] = url
         rating = list(
             soup.find(
                 class_="wikitable card").find_all(
